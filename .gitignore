@@ -1,0 +1,10 @@
+streamer
+bazel-bin
+bazel-streamer
+bazel-out
+bazel-testlogs
+bazel-workspace
+bdist
+dist
+.vscode/
+*.mp4
