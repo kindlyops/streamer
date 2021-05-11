@@ -7,5 +7,6 @@ bazel-workspace
 bdist
 dist
 test_data/
+error_data/
 .vscode/
 *.mp4

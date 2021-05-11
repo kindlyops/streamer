@@ -53,7 +53,7 @@ export class KinesisTestStack extends cdk.Stack {
 
     const deliveryRole = new iam.Role(this, 'DeliveryRole', {
             assumedBy: new iam.ServicePrincipal('firehose.amazonaws.com'),
-            externalIds: [cdk.Stack.of(this).account],
+            externalIds: [cdk.Aws.ACCOUNT_ID],
         });
 
     const source = new kinesis.Stream(this, 'IngestStream', {
@@ -193,6 +193,8 @@ export class KinesisTestStack extends cdk.Stack {
             },
         });
         delivery.node.addDependency(deliveryRole);
+
+        new cdk.CfnOutput(this, 'KinesisTestingBucket', { value: bucket.bucketName });
   }
 }
 

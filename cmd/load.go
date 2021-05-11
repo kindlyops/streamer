@@ -15,11 +15,13 @@
 package cmd
 
 import (
+	"bufio"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
-	"github.com/a8m/kinesis-producer"
+	producer "github.com/a8m/kinesis-producer"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
@@ -31,13 +33,17 @@ var loadCmd = &cobra.Command{
 	Short: "Walk a tree of jsonl files and batch load into kinesis stream.",
 	Long:  `Load a set of json records from a tree of files and load them into kinesis in batches with backpressure.`,
 	Run:   load,
-	Args:  cobra.ExactArgs(2), // TODO
+	Args:  cobra.ExactArgs(2),
 }
 
 func load(cmd *cobra.Command, args []string) {
 	data := args[0]
 	target := args[1]
-	_, _ = os.Stat(data)
+	_, err := os.Stat(data)
+
+	if err != nil {
+		log.Fatalf("Error opening %v: %v", data, err)
+	}
 
 	client := kinesis.New(session.New(aws.NewConfig()))
 	pr := producer.New(&producer.Config{
@@ -56,19 +62,43 @@ func load(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	go func() {
-		for i := 0; i < 5000; i++ {
-			err := pr.Put([]byte("foo"), "bar")
+	// go func() {
+	// 	for i := 0; i < 5000; i++ {
+	// 		err := pr.Put([]byte("foo"), "bar")
+	// 		if err != nil {
+	// 			log.Fatalf("error producing %v", err)
+	// 		}
+	// 	}
+	// }()
+	visit := func(p string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			if Debug {
+				log.Printf("Processing %v\n", p)
+			}
+			f, err := os.Open(p)
 			if err != nil {
-				log.Fatalf("error producing %v", err)
+				log.Printf("Trouble opening %v: %v\n", p, err)
+				return err
+			}
+			defer f.Close()
+			scanner := bufio.NewScanner(f)
+			for scanner.Scan() {
+				line := scanner.Text()
+				if Debug {
+					log.Printf("Got: %v\n", line)
+				}
+				pr.Put([]byte(line), "test_partition_key")
 			}
 		}
-	}()
+		return nil
+	}
+	err = filepath.Walk(data, visit)
 
 	time.Sleep(3 * time.Second)
 	pr.Stop()
-
-	log.Fatal("TODO")
 }
 
 func init() {
