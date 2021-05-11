@@ -7,7 +7,7 @@ go_library(
         "error.go",
         "mapstructure.go",
     ],
-    importmap = "github.com/kindlyops/terp/vendor/github.com/mitchellh/mapstructure",
+    importmap = "github.com/kindlyops/streamer/vendor/github.com/mitchellh/mapstructure",
     importpath = "github.com/mitchellh/mapstructure",
     visibility = ["//visibility:public"],
 )

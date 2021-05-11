@@ -35,23 +35,3 @@ http_archive(
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 gazelle_dependencies()
-
-# buildtools_version = "0.28.0"
-
-# http_archive(
-#     name = "io_bazel_buildtools",
-#     sha256 = "5ec71602e9b458b01717fab1d37492154c1c12ea83f881c745dbd88e9b2098d8",
-#     strip_prefix = "buildtools-{0}".format(buildtools_version),
-#     urls = ["https://github.com/bazelbuild/buildtools/archive/{0}.tar.gz".format(buildtools_version)],
-# )
-
-# http_archive(
-#     name = "bazel_skylib",
-#     urls = [
-#         "https://github.com/bazelbuild/bazel-skylib/releases/download/1.0.3/bazel-skylib-1.0.3.tar.gz",
-#         "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.0.3/bazel-skylib-1.0.3.tar.gz",
-#     ],
-#     sha256 = "1c531376ac7e5a180e0237938a2536de0c54d93f5c278634818e0efc952dd56c",
-# )
-# load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
-# bazel_skylib_workspace()

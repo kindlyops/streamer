@@ -12,7 +12,7 @@ go_library(
         "open_mode_darwin.go",
         "windows.go",
     ],
-    importmap = "github.com/kindlyops/terp/vendor/github.com/fsnotify/fsnotify",
+    importmap = "github.com/kindlyops/streamer/vendor/github.com/fsnotify/fsnotify",
     importpath = "github.com/fsnotify/fsnotify",
     visibility = ["//visibility:public"],
     deps = select({

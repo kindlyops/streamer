@@ -17,7 +17,12 @@ package cmd
 import (
 	"log"
 	"os"
+	"time"
 
+	"github.com/a8m/kinesis-producer"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/spf13/cobra"
 )
 
@@ -26,12 +31,42 @@ var loadCmd = &cobra.Command{
 	Short: "Walk a tree of jsonl files and batch load into kinesis stream.",
 	Long:  `Load a set of json records from a tree of files and load them into kinesis in batches with backpressure.`,
 	Run:   load,
-	Args:  cobra.ExactArgs(1), // TODO
+	Args:  cobra.ExactArgs(2), // TODO
 }
 
 func load(cmd *cobra.Command, args []string) {
-	target := args[0]
-	_, _ = os.Stat(target)
+	data := args[0]
+	target := args[1]
+	_, _ = os.Stat(data)
+
+	client := kinesis.New(session.New(aws.NewConfig()))
+	pr := producer.New(&producer.Config{
+		StreamName:   target,
+		BacklogCount: 2000,
+		Client:       client,
+	})
+
+	pr.Start()
+
+	// Handle failures
+	go func() {
+		for r := range pr.NotifyFailures() {
+			// r contains `Data`, `PartitionKey` and `Error()`
+			log.Print(r)
+		}
+	}()
+
+	go func() {
+		for i := 0; i < 5000; i++ {
+			err := pr.Put([]byte("foo"), "bar")
+			if err != nil {
+				log.Fatalf("error producing %v", err)
+			}
+		}
+	}()
+
+	time.Sleep(3 * time.Second)
+	pr.Stop()
 
 	log.Fatal("TODO")
 }
