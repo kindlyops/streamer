@@ -6,7 +6,8 @@ type jo >/dev/null 2>&1 || {
   exit 1
 }
 
-for i in {1..100}
+for i in {1..100000}
 do
+   jo foo=bar n="${i}" baz=1 >> test.jsonl
    jo foo=bar n="${i}" baz=1.5 >> test.jsonl
 done

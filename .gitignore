@@ -6,5 +6,6 @@ bazel-testlogs
 bazel-workspace
 bdist
 dist
+test.jsonl
 .vscode/
 *.mp4
