@@ -39,7 +39,7 @@ export class KinesisTestStack extends cdk.Stack {
 
     new glue.Table(this, 'ApplogsGlueTable', {
             bucket: bucket,
-            s3Prefix: 'models/applogs_raw/',
+            s3Prefix: 'kinesis_delivered/',
             database: glueDb,
             tableName: tableName,
             dataFormat: glue.DataFormat.PARQUET,
