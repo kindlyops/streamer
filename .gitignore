@@ -8,5 +8,6 @@ bdist
 dist
 test_data/
 error_data/
+cleaned_data/
 .vscode/
 *.mp4
