@@ -16,13 +16,12 @@ package cmd
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 
 	producer "github.com/a8m/kinesis-producer"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/spf13/cobra"
@@ -33,22 +32,22 @@ var loadCmd = &cobra.Command{
 	Short: "Walk a tree of jsonl files and batch load into kinesis stream.",
 	Long:  `Load a set of json records from a tree of files and load them into kinesis in batches with backpressure.`,
 	Run:   load,
-	Args:  cobra.ExactArgs(2),
+	Args:  cobra.ExactArgs(2), //nolint:gomnd // this is an appropriate magic number
 }
 
 func load(cmd *cobra.Command, args []string) {
 	data := args[0]
 	target := args[1]
-	_, err := os.Stat(data)
 
+	sess, err := session.NewSession()
 	if err != nil {
-		log.Fatalf("Error opening %v: %v", data, err)
+		log.Fatalf("Error establishing AWS session: %v", err)
 	}
 
-	client := kinesis.New(session.New(aws.NewConfig()))
+	client := kinesis.New(sess)
 	pr := producer.New(&producer.Config{
 		StreamName:   target,
-		BacklogCount: 2000,
+		BacklogCount: 2000, //nolint:gomnd // channel backlog before blocking Put
 		Client:       client,
 	})
 
@@ -62,42 +61,40 @@ func load(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	// go func() {
-	// 	for i := 0; i < 5000; i++ {
-	// 		err := pr.Put([]byte("foo"), "bar")
-	// 		if err != nil {
-	// 			log.Fatalf("error producing %v", err)
-	// 		}
-	// 	}
-	// }()
 	visit := func(p string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
+
 		if !info.IsDir() {
-			if Debug {
-				log.Printf("Processing %v\n", p)
-			}
 			f, err := os.Open(p)
 			if err != nil {
-				log.Printf("Trouble opening %v: %v\n", p, err)
-				return err
+				return fmt.Errorf("failed to open file %v: %w", p, err)
 			}
 			defer f.Close()
+
 			scanner := bufio.NewScanner(f)
 			for scanner.Scan() {
 				line := scanner.Text()
 				if Debug {
 					log.Printf("Got: %v\n", line)
 				}
-				pr.Put([]byte(line), "test_partition_key")
+
+				err = pr.Put([]byte(line), "test_partition_key")
+				if err != nil {
+					log.Fatalf("Error producing to kinesis: %v\n", err)
+				}
 			}
 		}
+
 		return nil
 	}
-	err = filepath.Walk(data, visit)
 
-	time.Sleep(3 * time.Second)
+	err = filepath.Walk(data, visit)
+	if err != nil {
+		log.Printf("Error from filepath.Walk: %v\n", err)
+	}
+
 	pr.Stop()
 }
 

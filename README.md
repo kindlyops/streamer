@@ -11,7 +11,6 @@ An utility for working with kinesis streams.
   `aws s3 ls --summarize --human-readable --recursive 's3://my-bucket/firehose_errors/format-conversion-failed/'`
   and then
   `aws s3 cp --recursive s3://my-bucket/firehose_errors/format_conversion_failed/ error_data/`
-* Analyze will process the tree of error records, summarizing by type.
 * Extract will extract the original source record from a tree of error logs,
   filtering by error type. The records are decoded and batched into a new file.
 * OPTIONAL: perform any needed processing/transform of the records using custom
