@@ -19,11 +19,11 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -65,13 +65,11 @@ func extract(cmd *cobra.Command, args []string) {
 			scanner := bufio.NewScanner(f)
 			for scanner.Scan() {
 				line := scanner.Text()
-				if Debug {
-					log.Printf("Got: %v\n", line)
-				}
+				log.Debug().Msgf("Scanned: %v", line)
 
 				raw, err := getOriginalRecord(line)
 				if err != nil {
-					log.Printf("Failed to extract original record from: %v\n", line)
+					log.Error().Err(err).Str("original", line).Msg("Failed to extract original record")
 				} else {
 					_, err = w.Write(raw)
 					if err != nil {
@@ -96,7 +94,7 @@ func extract(cmd *cobra.Command, args []string) {
 
 	err := filepath.Walk(source, visit)
 	if err != nil {
-		log.Printf("Error from filepath.Walk: %v\n", err)
+		log.Error().Err(err).Msg("Error from filepath.Walk")
 	}
 }
 

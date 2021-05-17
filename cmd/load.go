@@ -17,13 +17,13 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
 	producer "github.com/a8m/kinesis-producer"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/kinesis"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -41,7 +41,7 @@ func load(cmd *cobra.Command, args []string) {
 
 	sess, err := session.NewSession()
 	if err != nil {
-		log.Fatalf("Error establishing AWS session: %v", err)
+		log.Fatal().Err(err).Msg("Error establishing AWS session")
 	}
 
 	client := kinesis.New(sess)
@@ -57,7 +57,7 @@ func load(cmd *cobra.Command, args []string) {
 	go func() {
 		for r := range pr.NotifyFailures() {
 			// r contains `Data`, `PartitionKey` and `Error()`
-			log.Print(r)
+			log.Debug().Msgf("%v", r)
 		}
 	}()
 
@@ -76,13 +76,11 @@ func load(cmd *cobra.Command, args []string) {
 			scanner := bufio.NewScanner(f)
 			for scanner.Scan() {
 				line := scanner.Text()
-				if Debug {
-					log.Printf("Got: %v\n", line)
-				}
+				log.Debug().Msgf("Scanned: %v", line)
 
 				err = pr.Put([]byte(line), "test_partition_key")
 				if err != nil {
-					log.Fatalf("Error producing to kinesis: %v\n", err)
+					log.Fatal().Err(err).Msg("Error producing to kinesis")
 				}
 			}
 		}
@@ -92,7 +90,7 @@ func load(cmd *cobra.Command, args []string) {
 
 	err = filepath.Walk(data, visit)
 	if err != nil {
-		log.Printf("Error from filepath.Walk: %v\n", err)
+		log.Error().Err(err).Msg("Error from filepath.Walk")
 	}
 
 	pr.Stop()
