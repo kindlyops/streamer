@@ -8,7 +8,9 @@ require (
 	// If changing rules_go version, remember to change version in WORKSPACE also
 	github.com/bazelbuild/rules_go v0.27.0
 	github.com/jpillora/backoff v1.0.0 // indirect
+	github.com/mattn/go-isatty v0.0.3
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/rs/zerolog v1.22.0
 	github.com/spf13/cobra v0.0.7
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.7.0 // indirect
