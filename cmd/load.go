@@ -74,11 +74,11 @@ func load(cmd *cobra.Command, args []string) {
 			defer f.Close()
 
 			scanner := bufio.NewScanner(f)
-			for scanner.Scan() {
+			for count := 1; scanner.Scan(); count++ {
 				line := scanner.Text()
 				log.Debug().Msgf("Scanned: %v", line)
 
-				err = pr.Put([]byte(line), "test_partition_key")
+				err = pr.Put([]byte(line), fmt.Sprintf("partition-key-%d", count))
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error producing to kinesis")
 				}
