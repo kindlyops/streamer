@@ -65,7 +65,9 @@ func extract(cmd *cobra.Command, args []string) {
 			scanner := bufio.NewScanner(f)
 			for scanner.Scan() {
 				line := scanner.Text()
-				log.Debug().Msgf("Scanned: %v", line)
+				if Debug {
+					log.Debug().Msgf("Scanned: %v", line)
+				}
 
 				raw, err := getOriginalRecord(line)
 				if err != nil {

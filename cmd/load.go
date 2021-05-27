@@ -76,7 +76,9 @@ func load(cmd *cobra.Command, args []string) {
 			scanner := bufio.NewScanner(f)
 			for count := 1; scanner.Scan(); count++ {
 				line := scanner.Text()
-				log.Debug().Msgf("Scanned: %v", line)
+				if Debug {
+					log.Debug().Msgf("Scanned: %v", line)
+				}
 
 				err = pr.Put([]byte(line), fmt.Sprintf("partition-key-%d", count))
 				if err != nil {
