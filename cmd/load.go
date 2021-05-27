@@ -57,7 +57,7 @@ func load(cmd *cobra.Command, args []string) {
 	go func() {
 		for r := range pr.NotifyFailures() {
 			// r contains `Data`, `PartitionKey` and `Error()`
-			log.Debug().Msgf("%v", r)
+			log.Info().Msgf("%v", r)
 		}
 	}()
 
