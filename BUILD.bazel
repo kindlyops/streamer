@@ -41,6 +41,17 @@ go_binary(
 )
 
 go_binary(
+    name = "streamer-darwin-m1",
+    embed = [":go_default_library"],
+    goarch = "arm64",
+    goos = "darwin",
+    visibility = ["//visibility:public"],
+    x_defs = {
+        "version": VERSION,
+    },
+)
+
+go_binary(
     name = "streamer-windows",
     embed = [":go_default_library"],
     goarch = "amd64",
@@ -56,6 +67,7 @@ alias(
     actual = select({
         "@io_bazel_rules_go//go/platform:linux_amd64": ":streamer-linux",
         "@io_bazel_rules_go//go/platform:darwin_amd64": ":streamer-darwin",
+        "@io_bazel_rules_go//go/platform:darwin_arm64": ":streamer-darwin-m1",
         "@io_bazel_rules_go//go/platform:windows_amd64": ":streamer-windows",
         "//conditions:default": ":streamer-linux",
     }),
@@ -65,6 +77,12 @@ copy_file(
     name = "install-darwin",
     src = "//:streamer-darwin",
     out = "bdist/streamer_darwin_amd64/streamer",
+)
+
+copy_file(
+    name = "install-darwin-m1",
+    src = "//:streamer-darwin-m1",
+    out = "bdist/streamer_darwin_arm64/streamer",
 )
 
 copy_file(
@@ -90,6 +108,9 @@ go_test(
         "@io_bazel_rules_go//go/platform:darwin_amd64": [
             "$(location :streamer-darwin)",
         ],
+        "@io_bazel_rules_go//go/platform:darwin_arm64": [
+            "$(location :streamer-darwin-m1)",
+        ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "$(location :streamer-windows)",
         ],
@@ -101,6 +122,9 @@ go_test(
         ],
         "@io_bazel_rules_go//go/platform:darwin_amd64": [
             ":streamer-darwin",
+        ],
+        "@io_bazel_rules_go//go/platform:darwin_arm64": [
+            ":streamer-darwin-m1",
         ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             ":streamer-windows",

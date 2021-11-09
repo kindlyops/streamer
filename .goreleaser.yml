@@ -3,12 +3,11 @@ project_name: streamer
 builds:
   -
     main: dummy.go
-    goos:
-      - linux
-      - darwin
-      - windows
-    goarch:
-      - amd64
+    targets:
+      - linux_amd64
+      - darwin_amd64
+      - darwin_arm64
+      - windows_amd64
     binary: streamer
     hooks:
       post: pwsh goreleaser-post-hook.ps1
